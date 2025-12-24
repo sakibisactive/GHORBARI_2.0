@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
   membershipStartDate: { type: Date },
   isVerificationRequested: { type: Boolean, default: false },
   deletionRequested: { type: Boolean, default: false },
-  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }]
+  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }],monthlyFee: { type: Number, default: 1000 }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

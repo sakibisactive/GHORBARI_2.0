@@ -68,7 +68,7 @@ const SuggestionPage = () => {
             <p><strong>Price:</strong> {prop.price.toLocaleString()} TK</p>
             <hr style={{margin: '10px 0', opacity: 0.5}}/>
             
-            <p style={{ color: '#ffffffff', fontWeight: 'bold' }}>1. Crime Rate: {prop.crimeRate} (Low is good)</p>
+            <p style={{ color: '#ffffffff', fontWeight: 'bold' }}>1. Crime Rate: {prop.crimeRate} %</p>
             <p style={{ color: '#ffffffff' }}>2. Hospital: {prop.distHospital} km</p>
             <p style={{ color: '#ffffffff' }}>3. School: {prop.distSchool} km</p>
             <p style={{ color: '#ffffffff' }}>4. Market: {prop.distMarket} km</p>

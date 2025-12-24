@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
-const { searchProperties, getPropertyById, requestMeeting, getServiceProviders } = require('../controllers/publicController');
+const { searchProperties, getPropertyById, requestMeeting, getServiceProviders,rateProperty } = require('../controllers/publicController');
 
 router.get('/search', protect, searchProperties);
 router.get('/property/:id', protect, getPropertyById);
 router.post('/meet', protect, requestMeeting);
 router.get('/services', protect, getServiceProviders);
-
+router.put('/property/:id/rate', protect, rateProperty);
 module.exports = router;

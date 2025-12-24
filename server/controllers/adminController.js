@@ -1,7 +1,9 @@
 const User = require('../models/User');
 const Property = require('../models/Property');
 const Story = require('../models/Story');
-
+const MeetingRequest = require('../models/MeetingRequest');
+const AdminLog = require('../models/AdminLog');
+const FAQ = require('../models/FAQ'); // Import at top
 // @desc    Get users requesting verification
 const getVerificationRequests = async (req, res) => {
     const users = await User.find({ role: 'user' }).select('-password');
@@ -15,6 +17,12 @@ const approveMembership = async (req, res) => {
         user.role = 'premium';
         user.membershipStartDate = new Date();
         await user.save();
+        await AdminLog.create({
+            adminId: req.user._id,
+            adminEmail: req.user.email,
+            action: 'Approved Premium Membership',
+            targetId: user._id
+        });
         res.json({ message: 'User upgraded to Premium' });
     } else {
         res.status(404).json({ message: 'User not found' });
@@ -49,6 +57,12 @@ const togglePropertyStatus = async (req, res) => {
     if (property) {
         property.status = property.status === 'available' ? 'unavailable' : 'available';
         await property.save();
+        await AdminLog.create({
+            adminId: req.user._id,
+            adminEmail: req.user.email,
+            action: `Changed Property Status to ${property.status}`,
+            targetId: property._id
+        });
         res.json(property);
     } else {
         res.status(404).json({ message: 'Property not found' });
@@ -95,7 +109,55 @@ const deleteUser = async (req, res) => {
         res.status(500).json({ message: 'Error deleting user' });
     }
 };
+const getMeetingRequests = async (req, res) => {
+    try {
+        const requests = await MeetingRequest.find({ status: 'pending' });
+        res.json(requests);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching meetings' });
+    }
+};
 
+const resolveMeetingRequest = async (req, res) => {
+    try {
+        const meeting = await MeetingRequest.findById(req.params.id);
+        if (meeting) {
+            meeting.status = 'connected';
+            await meeting.save();
+            res.json({ message: 'Marked as Connected' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating status' });
+    }
+};
+// @desc    Get all unanswered FAQs
+const getPendingFAQs = async (req, res) => {
+    try {
+        const faqs = await FAQ.find({ answer: { $exists: false } }); // Find questions with no answer
+        res.json(faqs);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching FAQs' });
+    }
+};
+
+// @desc    Reply to an FAQ
+const replyToFAQ = async (req, res) => {
+    const { answer } = req.body;
+    try {
+        const faq = await FAQ.findById(req.params.id);
+        if (faq) {
+            faq.answer = answer;
+            await faq.save();
+            res.json({ message: 'Reply sent' });
+        } else {
+            res.status(404).json({ message: 'FAQ not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error replying' });
+    }
+};
+
+// Don't forget to add them to module.exports at the bottom!
 module.exports = {
     getVerificationRequests,
     approveMembership,
@@ -104,5 +166,9 @@ module.exports = {
     getPendingStories,
     reviewStory,
     getDeletionRequests,
-    deleteUser
+    deleteUser,
+    getMeetingRequests,     // <--- ADD THIS
+    resolveMeetingRequest,
+    getPendingFAQs,
+    replyToFAQ
 };

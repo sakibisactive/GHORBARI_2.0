@@ -1,22 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-// NOTE: Navbar removed to avoid double navbar
 
 const UpgradePage = () => {
   const [referral, setReferral] = useState('');
   const [step, setStep] = useState(1);
-  const [price, setPrice] = useState(1000);
+  const [price, setPrice] = useState(1000); // Default
+  const [loading, setLoading] = useState(true);
   
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
   const token = user && user.token;
+  const isPremium = user && user.role === 'premium';
+
+  // 1. Fetch the correct price on load
+  useEffect(() => {
+      const fetchPrice = async () => {
+          try {
+              const res = await axios.get('http://localhost:5000/api/actions/subscription-price', {
+                  headers: { Authorization: `Bearer ${token}` }
+              });
+              setPrice(res.data.price);
+          } catch (err) { console.error(err); }
+          setLoading(false);
+      };
+      if(token) fetchPrice();
+  }, [token]);
 
   const checkReferral = () => {
     if(referral.trim() !== "") {
-        // Simple client-side check to see if they typed something. 
-        // Real validation happens on backend, but we update UI to show potential discount.
-        setPrice(950);
+        setPrice(950); // Visual update for Non-Premium user
     } else {
         setPrice(1000);
     }
@@ -24,61 +37,70 @@ const UpgradePage = () => {
   };
 
   const handlePayment = async () => {
-      try {
-          // Simulate BKash Payment
-          const confirmPayment = window.confirm(`Pay ${price} TK via BKash?`);
-          if(!confirmPayment) return;
+      const confirmPayment = window.confirm(`Pay ${price} TK via BKash?`);
+      if(!confirmPayment) return;
 
+      try {
           const res = await axios.post('http://localhost:5000/api/actions/upgrade', 
-            { referralEmail: referral }, 
+            { referralEmail: isPremium ? null : referral }, // Premium users don't send referrals
             { headers: { Authorization: `Bearer ${token}` } }
           );
           
-          // Success Notification
           alert(res.data.message);
-          navigate('/user-dashboard');
+          navigate(isPremium ? '/premium-dashboard' : '/user-dashboard');
       } catch (err) {
-          const msg = (err.response && err.response.data && err.response.data.message) || 'Error processing request';
+          const msg = err.response?.data?.message || 'Error processing request';
           alert(msg);
-          // If referral failed, go back to step 1
-          if(err.response && err.response.status === 400) setStep(1);
+          if(err.response?.status === 400) setStep(1);
       }
   };
+
+  if(loading) return <div className="container center-screen-content"><h2 style={{color:'white'}}>Loading...</h2></div>;
 
   return (
     <div className="container center-screen-content">
       <div className="form-container" style={{ textAlign: 'center', maxWidth: '500px' }}>
-          <h2 style={{ color: '#0ec9e2ff', marginBottom: '20px' }}>PAYMENT</h2>
+          <h2 style={{ color: '#0ec9e2ff', marginBottom: '20px' }}>
+              {isPremium ? "RENEW SUBSCRIPTION" : "UPGRADE TO PREMIUM"}
+          </h2>
           
-          {step === 1 ? (
+          {/* LOGIC: Only show Referral Input if NOT Premium */}
+          {!isPremium && step === 1 ? (
               <React.Fragment>
-                  
-                  
+                  <p style={{color: '#13c6deff', marginBottom: '50px'}}>
+                      Standard Price: 1000 TK<br/>
+                      <span style={{color: 'red'}}>Referral Price: 950 TK</span>
+                  </p>
                   <input 
                       type="email" 
-                      placeholder="Referrer Premium Member's Email to get 50 TK OFF" 
+                      placeholder="Referrer Email (Optional)" 
                       value={referral}
                       onChange={e => setReferral(e.target.value)}
                   />
-                  <button className="btn-primary" onClick={checkReferral}>PROCEED TO PAYMENT</button>
-                  <button 
-                    style={{ marginTop: '15px', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', display: 'block', margin: '10px auto' }} 
-                    onClick={() => { setReferral(''); setPrice(1000); setStep(2); }}
-                  >
-                      
-                  </button>
+                  <button className="btn-primary" onClick={checkReferral}>NEXT</button>
+                  
               </React.Fragment>
           ) : (
+              // Step 2 (Or Step 1 for Premium Users)
               <React.Fragment>
+                  <h3 style={{ marginBottom: '20px' }}>Total Payable: {price} TK</h3>
                   
-                  
+                  {isPremium && price < 1000 && (
+                      <p style={{color: 'green', fontWeight: 'bold', marginBottom: '20px'}}>
+                          🎉 You have a referral discount applied!
+                      </p>
+                  )}
+
                   <div style={{display: 'flex', gap: '10px', justifyContent: 'center'}}>
                     <button className="btn-primary" style={{ background: '#0eb0e2ff' }} onClick={handlePayment}>
                         PAY NOW
                     </button>
-                    <button className="btn-primary" style={{ background: '#95a5a6' }} onClick={() => setStep(1)}>
-                        BACK
-                    </button>
+                    
+                    {!isPremium && (
+                        <button className="btn-primary" style={{ background: '#95a5a6' }} onClick={() => setStep(1)}>
+                            BACK
+                        </button>
+                    )}
                   </div>
               </React.Fragment>
           )}

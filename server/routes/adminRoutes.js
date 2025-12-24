@@ -11,9 +11,15 @@ const {
     getPendingStories,
     reviewStory,
     getDeletionRequests, 
-    deleteUser
+    deleteUser,getMeetingRequests,
+    resolveMeetingRequest,
+    getPendingFAQs, 
+    replyToFAQ
 } = require('../controllers/adminController');
 
+// FAQ Routes
+router.get('/faqs', protect, adminOnly, getPendingFAQs);
+router.put('/faq-reply/:id', protect, adminOnly, replyToFAQ);
 // Verification Routes
 router.get('/verification', protect, adminOnly, getVerificationRequests);
 router.put('/verify/:id', protect, adminOnly, approveMembership);
@@ -29,5 +35,6 @@ router.put('/story-review/:id', protect, adminOnly, reviewStory);
 // Deletion Routes (The ones that were causing the crash)
 router.get('/deletion-requests', protect, adminOnly, getDeletionRequests);
 router.delete('/users/:id', protect, adminOnly, deleteUser);
-
+router.get('/meetings', protect, adminOnly, getMeetingRequests);
+router.put('/meetings/:id', protect, adminOnly, resolveMeetingRequest);
 module.exports = router;

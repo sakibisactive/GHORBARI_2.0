@@ -116,29 +116,39 @@ const FAQPage = () => {
             ))}
         </div>
 
-        {/* ASK BUTTON */}
-        <button 
-            className="btn-primary" 
-            onClick={() => setShowForm(!showForm)} 
-            style={{ marginBottom: '20px' }}
-        >
-            {showForm ? t('faq_cancel_btn') : t('faq_ask_btn')}
-        </button>
-        
-        {/* FORM */}
-        {showForm && (
-            <div className="form-container" style={{ margin: '0 auto 30px auto', maxWidth: '600px' }}>
-                <input 
-                    type="text" 
-                    placeholder={t('faq_placeholder')}
-                    value={question} 
-                    onChange={e => setQuestion(e.target.value)} 
-                    style={{ marginBottom: '10px' }}
-                />
-                <button className="btn-primary" onClick={handleAsk} style={{ width: '100%' }}>
-                    {t('faq_submit_btn')}
+        {/* --- CATEGORY BUTTONS --- */}
+        <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            {/* ... existing category buttons code ... */}
+        </div>
+
+        {/* CONDITION: Only show this section if user is NOT Admin */}
+        {!isAdmin && (
+            <>
+                {/* ASK BUTTON */}
+                <button 
+                    className="btn-primary" 
+                    onClick={() => setShowForm(!showForm)} 
+                    style={{ marginBottom: '20px' }}
+                >
+                    {showForm ? t('faq_cancel_btn') : t('faq_ask_btn')}
                 </button>
-            </div>
+                
+                {/* FORM */}
+                {showForm && (
+                    <div className="form-container" style={{ margin: '0 auto 30px auto', maxWidth: '600px' }}>
+                        <input 
+                            type="text" 
+                            placeholder={t('faq_placeholder')}
+                            value={question} 
+                            onChange={e => setQuestion(e.target.value)} 
+                            style={{ marginBottom: '10px' }}
+                        />
+                        <button className="btn-primary" onClick={handleAsk} style={{ width: '100%' }}>
+                            {t('faq_submit_btn')}
+                        </button>
+                    </div>
+                )}
+            </>
         )}
 
         {/* --- FAQ LIST --- */}

@@ -21,6 +21,7 @@ const AdminDashboard = () => {
       navigate('/auth');
       return;
     }
+    
 
     const fetchData = async () => {
       if (activeTab === 'main') return; 
@@ -32,6 +33,8 @@ const AdminDashboard = () => {
         if (activeTab === 'property') endpoint = '/api/admin/properties';
         if (activeTab === 'story') endpoint = '/api/admin/stories';
         if (activeTab === 'deletion') endpoint = '/api/admin/deletion-requests';
+        if (activeTab === 'meeting') endpoint = '/api/admin/meetings';
+        if (activeTab === 'faq') endpoint = '/api/admin/faqs';
 
         if (endpoint) {
           const res = await axios.get(`http://localhost:5000${endpoint}`, config);
@@ -60,7 +63,14 @@ const AdminDashboard = () => {
       setData(data.filter(u => u._id !== id));
     } catch (err) { alert('Action failed'); }
   };
-
+  const handleConnect = async (id) => {
+    if(!window.confirm("Mark this as connected? (Did you send the emails?)")) return;
+    try {
+        await axios.put(`http://localhost:5000/api/admin/meetings/${id}`, {}, config);
+        setData(data.filter(m => m._id !== id));
+        alert("Request marked as handled.");
+    } catch (err) { alert('Action failed'); }
+};
   const toggleStatus = async (id) => {
     try {
       await axios.put(`http://localhost:5000/api/admin/property-status/${id}`, {}, config);
@@ -87,6 +97,16 @@ const AdminDashboard = () => {
           }
       }
   };
+  const handleReplyFAQ = async (id) => {
+      const answer = prompt("Enter your reply:");
+      if (answer) {
+          try {
+              await axios.put(`http://localhost:5000/api/admin/faq-reply/${id}`, { answer }, config);
+              alert("Replied!");
+              setData(data.filter(q => q._id !== id));
+          } catch (err) { alert('Failed'); }
+      }
+  };
 
   // RENDER CONTENT
   const renderContent = () => {
@@ -108,7 +128,42 @@ const AdminDashboard = () => {
         </div>
       );
     }
+    if (activeTab === 'meeting') {
+  return (
+    <div className="grid-cards">
+       {data.length === 0 && <div className="card"><p>No pending meeting requests.</p></div>}
+       {data.map(m => (
+         <div key={m._id} className="card" style={{ textAlign: 'left', padding: '20px' }}>
+           <h4 style={{ color: '#00d2d3' }}>
+               📌 {m.propertyTitle} <span style={{fontSize:'0.8rem', color:'#ccc'}}>(ID: {m.propertyCode})</span>
+           </h4>
+           
+           <div style={{ margin: '15px 0', fontSize: '0.95rem' }}>
+               <p><strong>To (Owner):</strong> {m.ownerEmail}</p>
+               <p><strong>From (Buyer):</strong> {m.requesterEmail}</p>
+           </div>
 
+           <button className="btn-primary" onClick={() => handleConnect(m._id)}>
+               Mark as Connected
+           </button>
+         </div>
+       ))}
+    </div>
+  );
+}
+if (activeTab === 'faq') {
+      return (
+        <div className="grid-cards">
+           {data.length === 0 && <div className="card"><p>No pending questions.</p></div>}
+           {data.map(q => (
+             <div key={q._id} className="card">
+               <h4>Q: {q.question}</h4>
+               <button className="btn-primary" onClick={() => handleReplyFAQ(q._id)}>Reply</button>
+             </div>
+           ))}
+        </div>
+      );
+    }
     if (activeTab === 'deletion') {
         return (
           <div className="grid-cards">
@@ -218,6 +273,14 @@ const AdminDashboard = () => {
                     <span style={{fontSize: '2.5rem'}}>📝</span>
                     {t('admin_stories')}
                 </button>
+                <button className="dash-btn" onClick={() => setActiveTab('meeting')}>
+    <span style={{fontSize: '2.5rem'}}>🤝</span>
+    {t('Meetings') || "MEETINGS"}
+</button>
+<button className="dash-btn" onClick={() => setActiveTab('faq')}>
+    <span style={{fontSize: '2.5rem'}}>❓</span>
+    FAQ
+</button>
 
                 <button className="dash-btn" onClick={() => setActiveTab('deletion')}>
                     <span style={{fontSize: '2.5rem'}}>🗑️</span>

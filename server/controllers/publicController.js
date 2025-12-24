@@ -62,5 +62,23 @@ const getServiceProviders = async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 };
+// Add this function
+const rateProperty = async (req, res) => {
+    const { rating } = req.body; // 1-5
+    const property = await Property.findById(req.params.id);
 
-module.exports = { searchProperties, getPropertyById, requestMeeting, getServiceProviders };
+    if (property) {
+        // Simple Average Calculation
+        const totalScore = (property.rating * property.ratingCount) + Number(rating);
+        property.ratingCount += 1;
+        property.rating = totalScore / property.ratingCount;
+        
+        await property.save();
+        res.json({ message: 'Rating Added', newRating: property.rating });
+    } else {
+        res.status(404).json({ message: 'Property not found' });
+    }
+};
+
+// Add to exports at bottom
+module.exports = { searchProperties, getPropertyById, requestMeeting, getServiceProviders, rateProperty };

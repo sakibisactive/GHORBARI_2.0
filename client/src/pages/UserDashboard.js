@@ -61,9 +61,9 @@ const UserDashboard = () => {
                           className="btn-primary" 
                           style={{ fontSize: '0.9rem', padding: '8px 15px' }}
                           onClick={() => {
-                              alert(`Loading filter: ${s.name}`);
-                              navigate('/explore');
-                          }}
+    // Pass the saved filters to Explore Page via state
+    navigate('/explore', { state: { filters: s.filters } });
+}}
                       >
                           {s.name}
                       </button>

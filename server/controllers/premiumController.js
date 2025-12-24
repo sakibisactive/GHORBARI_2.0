@@ -124,8 +124,36 @@ const createPropertyAd = async (req, res) => {
         res.status(400).json({ message: 'Invalid Data' });
     }
 };
+// @desc    Toggle Property Status (Available <-> Unavailable)
+const togglePropertyStatus = async (req, res) => {
+    try {
+        const property = await Property.findById(req.params.id);
+        
+        if (!property) return res.status(404).json({ message: 'Property not found' });
 
+        // Security Check: Ensure the requester is the OWNER
+        if (property.ownerId.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        // Toggle Logic
+        if (property.status === 'available') {
+            property.status = 'unavailable';
+        } else if (property.status === 'unavailable') {
+            property.status = 'available';
+        }
+        // Note: We don't touch 'pending' status here.
+
+        await property.save();
+        res.json({ message: `Property is now ${property.status}`, status: property.status });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// Add to module.exports at the bottom:
+// module.exports = { ..., togglePropertyStatus };
 module.exports = { 
     getPremiumProfile, updatePropertyPrice, getMyWishlist,
-    getPriceAnalysis, getSuggestions, createPropertyAd 
+    getPriceAnalysis, getSuggestions, createPropertyAd ,togglePropertyStatus
 };
