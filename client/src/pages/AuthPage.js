@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-// Removed Navbar import since we don't want it here anymore
 import { useLanguage } from '../context/LanguageContext';
 
 const AuthPage = () => {
@@ -34,7 +33,6 @@ const AuthPage = () => {
   };
 
   return (
-    // Changed height to 100vh to center perfectly on the full screen
     <div className="flex-center" style={{ minHeight: '100vh', flexDirection: 'column' }}>
       <div className="form-container">
         <h2 style={{ textAlign: 'center' }}>{isLogin ? t('login') : t('register')}</h2>

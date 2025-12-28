@@ -190,11 +190,7 @@ const ExplorePage = () => {
             SEARCH
           </button>
 
-          {isPremium && (
-            <button style={saveButtonStyle} onClick={handleSaveSearch}>
-              SAVE
-            </button>
-          )}
+          
         </div>
       </div>
 

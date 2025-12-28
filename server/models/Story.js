@@ -6,7 +6,7 @@ const storySchema = new mongoose.Schema({
   title: String,
   content: String,
   status: { type: String, enum: ['pending', 'approved'], default: 'pending' },
-  category: { type: String, default: 'General' }, // <--- ADD THIS LINE
+  category: { type: String, default: 'General' }, 
   likes: { type: Number, default: 0 },
   comments: [{
       user: String,

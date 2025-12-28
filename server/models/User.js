@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema({
     filters: Object,
     savedAt: { type: Date, default: Date.now }
   }],
-  // Other fields optional for this quick setup, sticking to essentials
   membershipStartDate: { type: Date },
   isVerificationRequested: { type: Boolean, default: false },
   deletionRequested: { type: Boolean, default: false },

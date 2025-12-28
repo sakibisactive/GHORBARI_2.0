@@ -3,14 +3,12 @@ const Property = require('../models/Property');
 const Story = require('../models/Story');
 const MeetingRequest = require('../models/MeetingRequest');
 const AdminLog = require('../models/AdminLog');
-const FAQ = require('../models/FAQ'); // Import at top
-// @desc    Get users requesting verification
+const FAQ = require('../models/FAQ'); 
 const getVerificationRequests = async (req, res) => {
     const users = await User.find({ role: 'user' }).select('-password');
     res.json(users);
 };
 
-// @desc    Approve Premium Membership
 const approveMembership = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (user) {
@@ -29,18 +27,14 @@ const approveMembership = async (req, res) => {
     }
 };
 
-// @desc    Get All Properties
 const getAllProperties = async (req, res) => {
     try {
-        // 1. Fetch properties and populate the 'ownerId' field to get the email
         const properties = await Property.find({}).populate('ownerId', 'email');
 
-        // 2. Map through results to flatten the structure for the frontend
-        // The frontend expects 'ownerEmail' at the top level, not inside an object.
         const formattedProperties = properties.map(p => {
             return {
-                ...p._doc, // Spread the original property document
-                ownerEmail: p.ownerId ? p.ownerId.email : "Unknown" // Extract email safely
+                ...p._doc, 
+                ownerEmail: p.ownerId ? p.ownerId.email : "Unknown" 
             };
         });
 
@@ -51,7 +45,6 @@ const getAllProperties = async (req, res) => {
     }
 };
 
-// @desc    Toggle Property Availability
 const togglePropertyStatus = async (req, res) => {
     const property = await Property.findById(req.params.id);
     if (property) {
@@ -69,13 +62,11 @@ const togglePropertyStatus = async (req, res) => {
     }
 };
 
-// @desc    Get Pending Stories
 const getPendingStories = async (req, res) => {
     const stories = await Story.find({ status: 'pending' });
     res.json(stories);
 };
 
-// @desc    Approve/Reject Story
 const reviewStory = async (req, res) => {
     const { status } = req.body; 
     const story = await Story.findById(req.params.id);
@@ -94,13 +85,11 @@ const reviewStory = async (req, res) => {
     }
 };
 
-// @desc    Get Deletion Requests
 const getDeletionRequests = async (req, res) => {
     const users = await User.find({ deletionRequested: true });
     res.json(users);
 };
 
-// @desc    Delete User
 const deleteUser = async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);
@@ -130,17 +119,15 @@ const resolveMeetingRequest = async (req, res) => {
         res.status(500).json({ message: 'Error updating status' });
     }
 };
-// @desc    Get all unanswered FAQs
 const getPendingFAQs = async (req, res) => {
     try {
-        const faqs = await FAQ.find({ answer: { $exists: false } }); // Find questions with no answer
+        const faqs = await FAQ.find({ answer: { $exists: false } }); 
         res.json(faqs);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching FAQs' });
     }
 };
 
-// @desc    Reply to an FAQ
 const replyToFAQ = async (req, res) => {
     const { answer } = req.body;
     try {
@@ -157,7 +144,6 @@ const replyToFAQ = async (req, res) => {
     }
 };
 
-// Don't forget to add them to module.exports at the bottom!
 module.exports = {
     getVerificationRequests,
     approveMembership,
@@ -167,7 +153,7 @@ module.exports = {
     reviewStory,
     getDeletionRequests,
     deleteUser,
-    getMeetingRequests,     // <--- ADD THIS
+    getMeetingRequests,   
     resolveMeetingRequest,
     getPendingFAQs,
     replyToFAQ
